@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EmployeesRepository } from '../repository/employees.repository';
 
 @Injectable()
@@ -12,5 +12,15 @@ export class EmployeesService {
     );
 
     return employeeList;
+  }
+
+  async findOneDetail(employeeId: number) {
+    const employee =
+      await this.employeesRepository.findOneDetailByEmployeeId(employeeId);
+
+    if (!employee) {
+      throw new NotFoundException('The data does not exist');
+    }
+    return employee;
   }
 }

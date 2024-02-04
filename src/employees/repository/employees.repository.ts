@@ -14,8 +14,8 @@ export class EmployeesRepository {
     });
   }
 
-  findOneByEmployeeId(employeeId: number) {
-    return this.prisma.employees.findFirstOrThrow({
+  findOneDetailByEmployeeId(employeeId: number) {
+    return this.prisma.empDetailsView.findFirst({
       where: {
         employeeId,
       },

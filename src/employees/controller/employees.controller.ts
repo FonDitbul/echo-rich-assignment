@@ -3,6 +3,7 @@ import {
   Controller,
   DefaultValuePipe,
   Get,
+  Param,
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
@@ -23,6 +24,10 @@ export class EmployeesController {
   }
 
   // 특정 사원의 현재 정보 조회
+  @Get(':employeeId')
+  findOne(@Param('employeeId', ParseIntPipe) employeeId: number) {
+    return this.employeesService.findOneDetail(employeeId);
+  }
 
   // 특정 사원의 이력 정보 조회
 
