@@ -1,0 +1,128 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Countries {
+  countryId   String  @id @map("country_id") @db.Char(2)
+  countryName String? @map("country_name") @db.VarChar(40)
+  regionId    Int     @map("region_id")
+
+  Regions   Regions     @relation(fields: [regionId], references: [regionId], onDelete: NoAction, onUpdate: NoAction)
+  Locations Locations[]
+
+  @@map("countries")
+}
+
+model Departments {
+  departmentId   Int    @id @map("department_id")
+  departmentName String @map("departmentName") @db.VarChar(30)
+  managerId      Int?   @map("manager_id")
+  locationId     Int?   @map("location_id")
+
+  locations        Locations?   @relation(fields: [locationId], references: [locationId], onDelete: NoAction, onUpdate: NoAction)
+  EmployeesManager Employees?   @relation("DepartmentsEmployeesManager", fields: [managerId], references: [employeeId], onDelete: NoAction, onUpdate: NoAction)
+  Employees        Employees[]  @relation("DepartmentsEmployees")
+  JobHistory       JobHistory[]
+
+  @@map("departments")
+}
+
+model Employees {
+  employeeId    Int      @id @map("employee_id")
+  firstName     String?  @map("first_name") @db.VarChar(20)
+  lastName      String   @map("last_name") @db.VarChar(25)
+  email         String   @db.VarChar(25)
+  phoneNumber   String?  @map("phone_number") @db.VarChar(20)
+  hireDate      DateTime @map("hire_date") @db.Date
+  jobId         String   @map("job_id") @db.VarChar(10)
+  salary        Decimal  @db.Decimal(8, 2)
+  commissionPct Decimal? @map("commission_pct") @db.Decimal(2, 2)
+  managerId     Int?     @map("manager_id")
+  departmentId  Int?     @map("department_id")
+
+  DepartmentsManager Departments[] @relation("DepartmentsEmployeesManager")
+  Departments        Departments?  @relation("DepartmentsEmployees", fields: [departmentId], references: [departmentId], onDelete: NoAction, onUpdate: NoAction)
+  Jobs               Jobs          @relation(fields: [jobId], references: [jobId], onDelete: NoAction, onUpdate: NoAction)
+  EmployeesManager   Employees?    @relation("EmployeesToManager", fields: [managerId], references: [employeeId], onDelete: NoAction, onUpdate: NoAction)
+  EmployeesPeer      Employees[]   @relation("EmployeesToManager")
+  JobHisotry         JobHistory[]
+
+  @@map("employees")
+}
+
+model JobHistory {
+  employeeId   Int      @map("employee_id")
+  startDate    DateTime @map("start_date") @db.Date
+  endDate      DateTime @map("end_date") @db.Date
+  jobId        String   @map("job_id") @db.VarChar(10)
+  departmentId Int      @map("department_id")
+
+  Departments Departments @relation(fields: [departmentId], references: [departmentId], onDelete: NoAction, onUpdate: NoAction)
+  Employees   Employees   @relation(fields: [employeeId], references: [employeeId], onDelete: NoAction, onUpdate: NoAction)
+  Jobs        Jobs        @relation(fields: [jobId], references: [jobId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([employeeId, startDate], map: "employee_id_start_date_index")
+  @@map("job_history")
+}
+
+model Jobs {
+  jobId     String   @id @map("job_id") @db.VarChar(10)
+  jobTitle  String   @map("job_title") @db.VarChar(35)
+  minSalary Decimal? @map("min_salary") @db.Decimal(8, 0)
+  maxSalary Decimal? @map("max_salary") @db.Decimal(8, 0)
+
+  Employees  Employees[]
+  JobHistory JobHistory[]
+
+  @@map("jobs")
+}
+
+model Locations {
+  locationId    Int     @id @default(autoincrement()) @map("location_id")
+  streetAddress String? @map("street_address") @db.VarChar(40)
+  postalCode    String? @map("postal_code") @db.VarChar(12)
+  city          String  @db.VarChar(30)
+  stateProvince String? @map("state_province") @db.VarChar(25)
+  countryId     String  @map("country_id") @db.Char(2)
+
+  Departments Departments[]
+  Countries   Countries     @relation(fields: [countryId], references: [countryId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("locations")
+}
+
+model Regions {
+  regionId   Int     @id @map("region_id")
+  regionName String? @map("region_name") @db.VarChar(25)
+
+  Countries Countries[]
+
+  @@map("regions")
+}
+
+view EmpDetailsView {
+  employeeId     Int      @id @map("employee_id")
+  jobId          Int      @map("job_id")
+  managerId      Int      @map("manager_id")
+  departmentId   Int      @map("department_id")
+  locationId     Int      @map("location_id")
+  countryId      Int      @map("country_id")
+  firstName      String?  @map("first_name") @db.VarChar(20)
+  lastName       String   @map("last_name") @db.VarChar(25)
+  salary         Decimal  @db.Decimal(8, 2)
+  commissionPct  Decimal? @map("commission_pct") @db.Decimal(2, 2)
+  departmentName String   @map("departmentName") @db.VarChar(30)
+  jobTitle       String   @map("job_title") @db.VarChar(35)
+  city           String   @db.VarChar(30)
+  stateProvince  String?  @map("state_province") @db.VarChar(25)
+  countryName    String?  @map("country_name") @db.VarChar(40)
+  regionName     String?  @map("region_name") @db.VarChar(25)
+
+  @@map("emp_details_view")
+}
