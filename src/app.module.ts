@@ -1,8 +1,9 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { LoggerMiddleware } from './common/logger.middleware';
+import { EmployeesModule } from "./employees/employees.module";
 
 @Module({
-  imports: [],
+  imports: [EmployeesModule],
   controllers: [],
   providers: [],
 })
