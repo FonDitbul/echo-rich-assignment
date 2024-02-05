@@ -6,13 +6,18 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmpDetailsView, Employees, Prisma } from '@prisma/client';
 import { NotFoundException } from '@nestjs/common';
-import { EmployeesUpdateDto } from '../controller/employees.dto';
+import {
+  EmployeesUpdateDto,
+  EmployeesUpdateManagerDto,
+} from '../controller/employees.dto';
 
 const MockingEmployeesRepository = {
   findAll: jest.fn(),
+  findOneByEmployeeId: jest.fn(),
   findOneDetailByEmployeeId: jest.fn(),
   findOneWithJobsByEmployeeId: jest.fn(),
   update: jest.fn(),
+  updateManager: jest.fn(),
 };
 
 describe('Employees Service test', () => {
@@ -205,7 +210,7 @@ describe('Employees Service test', () => {
         salary: 20000,
       });
     });
-    it('해당 employeeId의 사원이 존재하며 최대 급여보다 많게 입력한 경우 최대 급여로 적용', async() => {
+    it('해당 employeeId의 사원이 존재하며 최대 급여보다 많게 입력한 경우 최대 급여로 적용', async () => {
       const givenUpdateDto: EmployeesUpdateDto = {
         employeeId: 100,
         firstName: 'test',
@@ -244,6 +249,56 @@ describe('Employees Service test', () => {
         ...givenUpdateDto,
         salary: 40000,
       });
+    });
+  });
+
+  describe('특정 사원의 정보 매니저 변경 기능', () => {
+    it('employeeId와 managerId를 입력받아 매니저 변경에 성공한 경우', async () => {
+      const givenDto: EmployeesUpdateManagerDto = {
+        employeeId: 100,
+        managerId: 10,
+      };
+      const givenManager: Employees = {
+        commissionPct: undefined,
+        departmentId: 0,
+        email: '',
+        employeeId: 0,
+        firstName: '',
+        hireDate: undefined,
+        jobId: '',
+        lastName: '',
+        managerId: 10,
+        phoneNumber: '',
+        salary: undefined,
+      };
+      employeesRepository.findOneByEmployeeId.mockResolvedValue(givenManager);
+
+      await sut.updateManager(givenDto);
+
+      expect(employeesRepository.updateManager).toHaveBeenCalledWith(100, 10);
+    });
+
+    it('employeeId와 managerId를 null 로 변경에 성공한 경우', async () => {
+      const givenDto: EmployeesUpdateManagerDto = {
+        employeeId: 100,
+      };
+
+      await sut.updateManager(givenDto);
+
+      expect(employeesRepository.updateManager).toHaveBeenCalledWith(100, null);
+    });
+
+    it('managerId를 통한 manager 정보가 존재하지 않는 경우 에러', async () => {
+      const givenDto: EmployeesUpdateManagerDto = {
+        employeeId: 100,
+        managerId: 10,
+      };
+
+      employeesRepository.findOneByEmployeeId.mockResolvedValue(null);
+
+      await expect(async () => {
+        await sut.updateManager(givenDto);
+      }).rejects.toThrowError(new NotFoundException('manager does not exist'));
     });
   });
 });

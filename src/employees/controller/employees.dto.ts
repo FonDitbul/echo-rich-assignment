@@ -42,3 +42,12 @@ export class EmployeesUpdateDto {
   @IsNumber()
   readonly commissionPct: number | null;
 }
+
+export class EmployeesUpdateManagerDto {
+  @IsNotEmpty()
+  @IsNumber()
+  readonly employeeId: number;
+
+  @IsOptional()
+  readonly managerId?: number | null;
+}

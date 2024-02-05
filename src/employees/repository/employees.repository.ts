@@ -40,6 +40,14 @@ export class EmployeesRepository {
     });
   }
 
+  findOneByEmployeeId(employeeId: number) {
+    return this.prisma.employees.findFirst({
+      where: {
+        employeeId,
+      },
+    });
+  }
+
   findOneDetailByEmployeeId(employeeId: number) {
     return this.prisma.empDetailsView.findFirst({
       where: {
@@ -84,6 +92,18 @@ export class EmployeesRepository {
       },
     });
 
+    return;
+  }
+
+  async updateManager(employeeId: number, managerId: number | null) {
+    await this.prisma.employees.update({
+      data: {
+        managerId,
+      },
+      where: {
+        employeeId,
+      },
+    });
     return;
   }
 }

@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EmployeesRepository } from '../repository/employees.repository';
-import { EmployeesUpdateDto } from '../controller/employees.dto';
+import {
+  EmployeesUpdateDto,
+  EmployeesUpdateManagerDto,
+} from '../controller/employees.dto';
 
 @Injectable()
 export class EmployeesService {
@@ -53,5 +56,23 @@ export class EmployeesService {
 
     await this.employeesRepository.update(copyUpdateDto);
     return;
+  }
+
+  async updateManager(updateDto: EmployeesUpdateManagerDto) {
+    const employeeId = updateDto.employeeId;
+    const managerId: number | null = updateDto.managerId
+      ? updateDto.managerId
+      : null;
+
+    if (managerId) {
+      const manager =
+        await this.employeesRepository.findOneByEmployeeId(managerId);
+
+      if (!manager) {
+        throw new NotFoundException('manager does not exist');
+      }
+    }
+
+    await this.employeesRepository.updateManager(employeeId, managerId);
   }
 }

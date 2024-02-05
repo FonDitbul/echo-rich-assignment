@@ -9,7 +9,7 @@ import {
   Patch,
   Query,
 } from '@nestjs/common';
-import { EmployeesUpdateDto } from './employees.dto';
+import { EmployeesUpdateDto, EmployeesUpdateManagerDto } from './employees.dto';
 
 @Controller('/employees')
 export class EmployeesController {
@@ -42,4 +42,9 @@ export class EmployeesController {
   }
 
   // manager_id
+  @Patch('manager')
+  async updateManager(@Body() updateDto: EmployeesUpdateManagerDto) {
+    await this.employeesService.updateManager(updateDto);
+    return true;
+  }
 }
