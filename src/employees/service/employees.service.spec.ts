@@ -1,12 +1,18 @@
 import { EmployeesService } from './employees.service';
-import { EmployeesRepository } from '../repository/employees.repository';
+import {
+  EmployeesRepository,
+  EmployeeWithJobs,
+} from '../repository/employees.repository';
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmpDetailsView, Employees, Prisma } from '@prisma/client';
 import { NotFoundException } from '@nestjs/common';
+import { EmployeesUpdateDto } from '../controller/employees.dto';
 
 const MockingEmployeesRepository = {
   findAll: jest.fn(),
   findOneDetailByEmployeeId: jest.fn(),
+  findOneWithJobsByEmployeeId: jest.fn(),
+  update: jest.fn(),
 };
 
 describe('Employees Service test', () => {
@@ -65,6 +71,7 @@ describe('Employees Service test', () => {
       expect(result).toHaveLength(2);
     });
   });
+
   describe('특정 사원의 현재 정보 조회 기능', () => {
     it('id를 통해 특정 사원의 정보 조회가 성공한 경우', async () => {
       const givenEmployee: EmpDetailsView = {
@@ -100,6 +107,143 @@ describe('Employees Service test', () => {
       await expect(async () => {
         await sut.findOneDetail(101);
       }).rejects.toThrowError(new NotFoundException('The data does not exist'));
+    });
+  });
+
+  describe('특정 사원의 정보 업데이트 기능', () => {
+    it('해당 employeeId의 사원이 존재하며 업데이트에 성공한 경우', async () => {
+      const givenUpdateDto: EmployeesUpdateDto = {
+        employeeId: 100,
+        firstName: 'test',
+        lastName: 'test',
+        email: 'test',
+        phoneNumber: '5512515',
+        salary: 35000,
+        commissionPct: null,
+      };
+      const givenEmployee: EmployeeWithJobs = {
+        commissionPct: undefined,
+        departmentId: 0,
+        email: '',
+        employeeId: 0,
+        firstName: '',
+        hireDate: undefined,
+        jobId: '',
+        lastName: '',
+        managerId: 0,
+        phoneNumber: '',
+        salary: undefined,
+        Jobs: {
+          jobId: 'AD_PRES',
+          jobTitle: 'President',
+          minSalary: new Prisma.Decimal(20000),
+          maxSalary: new Prisma.Decimal(40000),
+        },
+      };
+      employeesRepository.findOneWithJobsByEmployeeId.mockResolvedValue(
+        givenEmployee,
+      );
+
+      await sut.update(givenUpdateDto);
+
+      expect(employeesRepository.update).toHaveBeenCalledWith(givenUpdateDto);
+    });
+    it('해당 employeeId의 사원이 존재하지 않아 에러가 발생한 경우', async () => {
+      const givenUpdateDto: EmployeesUpdateDto = {
+        employeeId: 100,
+        firstName: 'test',
+        lastName: 'test',
+        email: 'test',
+        phoneNumber: '5512515',
+        salary: 35000,
+        commissionPct: null,
+      };
+
+      employeesRepository.findOneWithJobsByEmployeeId.mockResolvedValue(null);
+
+      await expect(async () => {
+        await sut.update(givenUpdateDto);
+      }).rejects.toThrowError(new NotFoundException('The data does not exist'));
+    });
+    it('해당 employeeId의 사원이 존재하며 최저 급여보다 적게 입력한 경우 최저 급여로 적용', async () => {
+      const givenUpdateDto: EmployeesUpdateDto = {
+        employeeId: 100,
+        firstName: 'test',
+        lastName: 'test',
+        email: 'test',
+        phoneNumber: '5512515',
+        salary: 1500,
+        commissionPct: null,
+      };
+      const givenEmployee: EmployeeWithJobs = {
+        commissionPct: undefined,
+        departmentId: 0,
+        email: '',
+        employeeId: 0,
+        firstName: '',
+        hireDate: undefined,
+        jobId: '',
+        lastName: '',
+        managerId: 0,
+        phoneNumber: '',
+        salary: undefined,
+        Jobs: {
+          jobId: 'AD_PRES',
+          jobTitle: 'President',
+          minSalary: new Prisma.Decimal(20000),
+          maxSalary: new Prisma.Decimal(40000),
+        },
+      };
+      employeesRepository.findOneWithJobsByEmployeeId.mockResolvedValue(
+        givenEmployee,
+      );
+
+      await sut.update(givenUpdateDto);
+
+      expect(employeesRepository.update).toHaveBeenCalledWith({
+        ...givenUpdateDto,
+        salary: 20000,
+      });
+    });
+    it('해당 employeeId의 사원이 존재하며 최대 급여보다 많게 입력한 경우 최대 급여로 적용', async() => {
+      const givenUpdateDto: EmployeesUpdateDto = {
+        employeeId: 100,
+        firstName: 'test',
+        lastName: 'test',
+        email: 'test',
+        phoneNumber: '5512515',
+        salary: 50000,
+        commissionPct: null,
+      };
+      const givenEmployee: EmployeeWithJobs = {
+        commissionPct: undefined,
+        departmentId: 0,
+        email: '',
+        employeeId: 0,
+        firstName: '',
+        hireDate: undefined,
+        jobId: '',
+        lastName: '',
+        managerId: 0,
+        phoneNumber: '',
+        salary: undefined,
+        Jobs: {
+          jobId: 'AD_PRES',
+          jobTitle: 'President',
+          minSalary: new Prisma.Decimal(20000),
+          maxSalary: new Prisma.Decimal(40000),
+        },
+      };
+      employeesRepository.findOneWithJobsByEmployeeId.mockResolvedValue(
+        givenEmployee,
+      );
+
+      await sut.update(givenUpdateDto);
+
+      expect(employeesRepository.update).toHaveBeenCalledWith({
+        ...givenUpdateDto,
+        salary: 40000,
+      });
     });
   });
 });
