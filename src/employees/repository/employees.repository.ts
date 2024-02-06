@@ -7,6 +7,11 @@ export type EmployeeWithJobs = Prisma.EmployeesGetPayload<{
   include: { Jobs: true };
 }>;
 
+export type EmployeeUpdateSalary = {
+  employeeId: number;
+  salary: number;
+};
+
 @Injectable()
 export class EmployeesRepository {
   constructor(private prisma: PrismaService) {}
@@ -67,6 +72,17 @@ export class EmployeesRepository {
     });
   }
 
+  findAllWithJobsByDepartmentId(departmentId: number) {
+    return this.prisma.employees.findMany({
+      where: {
+        departmentId,
+      },
+      include: {
+        Jobs: true,
+      },
+    });
+  }
+
   async update(updateDto: EmployeesUpdateDto) {
     const {
       employeeId,
@@ -104,6 +120,20 @@ export class EmployeesRepository {
         employeeId,
       },
     });
+    return;
+  }
+
+  async updateAllSalary(employeeUpdateList: EmployeeUpdateSalary[]) {
+    const query: Prisma.PrismaPromise<unknown>[] = [];
+
+    for (const employee of employeeUpdateList) {
+      query.push(
+        this.prisma.$queryRawUnsafe(
+          `UPDATE employees SET salary = ${employee.salary} WHERE employee_id=${employee.employeeId};`,
+        ),
+      );
+    }
+    await this.prisma.$transaction(query);
     return;
   }
 }

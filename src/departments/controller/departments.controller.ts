@@ -22,6 +22,4 @@ export class DepartmentsController {
   ) {
     return this.departmentsService.findAll(lastDepartmentId, take, searchName);
   }
-
-  // 특정 부서 급여 특정 비율 인상 API
 }

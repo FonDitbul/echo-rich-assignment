@@ -3,6 +3,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -50,4 +51,15 @@ export class EmployeesUpdateManagerDto {
 
   @IsOptional()
   readonly managerId?: number | null;
+}
+
+export class EmployeesUpdateSalaryByDepartmentId {
+  @IsNotEmpty()
+  @IsNumber()
+  readonly departmentId: number;
+
+  @Max(100)
+  @Min(0)
+  @IsNumber()
+  readonly increasePct: number;
 }

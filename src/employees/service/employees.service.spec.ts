@@ -9,6 +9,7 @@ import { NotFoundException } from '@nestjs/common';
 import {
   EmployeesUpdateDto,
   EmployeesUpdateManagerDto,
+  EmployeesUpdateSalaryByDepartmentId,
 } from '../controller/employees.dto';
 
 const MockingEmployeesRepository = {
@@ -16,8 +17,10 @@ const MockingEmployeesRepository = {
   findOneByEmployeeId: jest.fn(),
   findOneDetailByEmployeeId: jest.fn(),
   findOneWithJobsByEmployeeId: jest.fn(),
+  findAllWithJobsByDepartmentId: jest.fn(),
   update: jest.fn(),
   updateManager: jest.fn(),
+  updateAllSalary: jest.fn(),
 };
 
 describe('Employees Service test', () => {
@@ -299,6 +302,121 @@ describe('Employees Service test', () => {
       await expect(async () => {
         await sut.updateManager(givenDto);
       }).rejects.toThrowError(new NotFoundException('manager does not exist'));
+    });
+  });
+
+  describe('특정 부서 급여 특정 비율로 인상 기능', () => {
+    it('부서 id 와 인상 비율을 입력받아 업데이트에 성공한 경우', async () => {
+      const givenDto: EmployeesUpdateSalaryByDepartmentId = {
+        departmentId: 100,
+        increasePct: 10,
+      };
+
+      const givenEmployeeList: EmployeeWithJobs[] = [
+        {
+          employeeId: 1,
+          departmentId: 100,
+          salary: new Prisma.Decimal(30000),
+          commissionPct: null,
+          email: '',
+          firstName: '',
+          hireDate: undefined,
+          jobId: '',
+          lastName: '',
+          managerId: 0,
+          phoneNumber: '',
+          Jobs: {
+            jobId: 'AD_PRES',
+            jobTitle: 'President',
+            minSalary: new Prisma.Decimal(20000),
+            maxSalary: new Prisma.Decimal(40000),
+          },
+        },
+      ];
+
+      employeesRepository.findAllWithJobsByDepartmentId.mockResolvedValue(
+        givenEmployeeList,
+      );
+
+      await sut.updateAllIncreaseSalaryByDepartmentId(givenDto);
+
+      expect(employeesRepository.updateAllSalary).toHaveBeenCalledWith([
+        { employeeId: 1, salary: 33000 },
+      ]);
+    });
+
+    it('해당 부서 id 의 사원이 한명도 존재하지 않을 경우 에러', async () => {
+      const givenDto: EmployeesUpdateSalaryByDepartmentId = {
+        departmentId: 100,
+        increasePct: 10,
+      };
+
+      employeesRepository.findAllWithJobsByDepartmentId.mockResolvedValue([]);
+
+      await expect(async () => {
+        await sut.updateAllIncreaseSalaryByDepartmentId(givenDto);
+      }).rejects.toThrowError(
+        new NotFoundException('There are no employees in that department'),
+      );
+    });
+
+    it('인상 비율을 적용 후 급여가 최대 급여로 적용된 경우', async () => {
+      const givenDto: EmployeesUpdateSalaryByDepartmentId = {
+        departmentId: 100,
+        increasePct: 100,
+      };
+
+      const givenEmployeeList: EmployeeWithJobs[] = [
+        {
+          employeeId: 1,
+          departmentId: 100,
+          salary: new Prisma.Decimal(30000),
+          commissionPct: null,
+          email: '',
+          firstName: '',
+          hireDate: undefined,
+          jobId: '',
+          lastName: '',
+          managerId: 0,
+          phoneNumber: '',
+          Jobs: {
+            jobId: 'AD_PRES',
+            jobTitle: 'President',
+            minSalary: new Prisma.Decimal(20000),
+            maxSalary: new Prisma.Decimal(40000),
+          },
+        },
+        {
+          employeeId: 2,
+          departmentId: 100,
+          salary: new Prisma.Decimal(25000),
+          commissionPct: null,
+          email: '',
+          firstName: '',
+          hireDate: undefined,
+          jobId: '',
+          lastName: '',
+          managerId: 0,
+          phoneNumber: '',
+          Jobs: {
+            jobId: 'AD_PRES',
+            jobTitle: 'President',
+            minSalary: new Prisma.Decimal(20000),
+            maxSalary: new Prisma.Decimal(40000),
+          },
+        },
+      ];
+
+      employeesRepository.findAllWithJobsByDepartmentId.mockResolvedValue(
+        givenEmployeeList,
+      );
+
+      await sut.updateAllIncreaseSalaryByDepartmentId(givenDto);
+
+      expect(employeesRepository.updateAllSalary).toHaveBeenCalledWith([
+        { employeeId: 1, salary: 40000 },
+        { employeeId: 2, salary: 40000 },
+      ]);
     });
   });
 });

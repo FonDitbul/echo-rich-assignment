@@ -3,7 +3,9 @@ import { EmployeesRepository } from '../repository/employees.repository';
 import {
   EmployeesUpdateDto,
   EmployeesUpdateManagerDto,
+  EmployeesUpdateSalaryByDepartmentId,
 } from '../controller/employees.dto';
+import { Salary } from './salary';
 
 @Injectable()
 export class EmployeesService {
@@ -41,17 +43,14 @@ export class EmployeesService {
     const maxSalary: number = +employee.Jobs.maxSalary;
     const minSalary: number = +employee.Jobs.minSalary;
 
-    let applySalary = salary;
-    if (salary > maxSalary) {
-      applySalary = maxSalary;
-    }
-    if (salary < minSalary) {
-      applySalary = minSalary;
-    }
+    const salaryObj = new Salary(salary, maxSalary, minSalary);
+
+    salaryObj.overThanMax();
+    salaryObj.lessThanMin();
 
     const copyUpdateDto = {
       ...updateDto,
-      salary: applySalary,
+      salary: salaryObj.salary,
     };
 
     await this.employeesRepository.update(copyUpdateDto);
@@ -74,5 +73,38 @@ export class EmployeesService {
     }
 
     await this.employeesRepository.updateManager(employeeId, managerId);
+  }
+
+  async updateAllIncreaseSalaryByDepartmentId(
+    updateDto: EmployeesUpdateSalaryByDepartmentId,
+  ) {
+    const { departmentId, increasePct } = updateDto;
+    // departmentId 를 갖는 모든 사원들 가져오기 With Jobs
+    const employeeList =
+      await this.employeesRepository.findAllWithJobsByDepartmentId(
+        departmentId,
+      );
+
+    if (employeeList.length === 0) {
+      throw new NotFoundException('There are no employees in that department');
+    }
+
+    const updateEmployeeList = employeeList.map((employee) => {
+      const salaryObj = new Salary(
+        +employee.salary,
+        +employee.Jobs.maxSalary,
+        +employee.Jobs.minSalary,
+      );
+      salaryObj.increasePct(increasePct);
+      salaryObj.overThanMax();
+
+      return {
+        employeeId: employee.employeeId,
+        salary: salaryObj.salary,
+      };
+    });
+
+    await this.employeesRepository.updateAllSalary(updateEmployeeList);
+    return;
   }
 }
