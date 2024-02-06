@@ -21,11 +21,11 @@ model Countries {
 
 model Departments {
   departmentId   Int    @id @map("department_id")
-  departmentName String @map("departmentName") @db.VarChar(30)
+  departmentName String @map("department_name") @db.VarChar(30)
   managerId      Int?   @map("manager_id")
   locationId     Int?   @map("location_id")
 
-  locations        Locations?   @relation(fields: [locationId], references: [locationId], onDelete: NoAction, onUpdate: NoAction)
+  Locations        Locations?   @relation(fields: [locationId], references: [locationId], onDelete: NoAction, onUpdate: NoAction)
   EmployeesManager Employees?   @relation("DepartmentsEmployeesManager", fields: [managerId], references: [employeeId], onDelete: NoAction, onUpdate: NoAction)
   Employees        Employees[]  @relation("DepartmentsEmployees")
   JobHistory       JobHistory[]
