@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../repository/prisma.service';
-import { EmployeesUpdateDto } from '../controller/employees.dto';
+import { EmployeesUpdateReqDto } from '../controller/employees.req.dto';
 import { Prisma } from '@prisma/client';
 
 export type EmployeeWithJobs = Prisma.EmployeesGetPayload<{
@@ -83,7 +83,7 @@ export class EmployeesRepository {
     });
   }
 
-  async update(updateDto: EmployeesUpdateDto) {
+  async update(updateDto: EmployeesUpdateReqDto) {
     const {
       employeeId,
       firstName,

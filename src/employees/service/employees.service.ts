@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EmployeesRepository } from '../repository/employees.repository';
 import {
-  EmployeesUpdateDto,
-  EmployeesUpdateManagerDto,
+  EmployeesUpdateReqDto,
+  EmployeesUpdateManagerReqDto,
   EmployeesUpdateSalaryByDepartmentId,
-} from '../controller/employees.dto';
+} from '../controller/employees.req.dto';
 import { Salary } from './salary';
 
 @Injectable()
@@ -31,7 +31,7 @@ export class EmployeesService {
     return employee;
   }
 
-  async update(updateDto: EmployeesUpdateDto) {
+  async update(updateDto: EmployeesUpdateReqDto) {
     const { employeeId, salary } = updateDto;
 
     const employee =
@@ -57,7 +57,7 @@ export class EmployeesService {
     return;
   }
 
-  async updateManager(updateDto: EmployeesUpdateManagerDto) {
+  async updateManager(updateDto: EmployeesUpdateManagerReqDto) {
     const employeeId = updateDto.employeeId;
     const managerId: number | null = updateDto.managerId
       ? updateDto.managerId

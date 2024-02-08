@@ -7,10 +7,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EmpDetailsView, Employees, Prisma } from '@prisma/client';
 import { NotFoundException } from '@nestjs/common';
 import {
-  EmployeesUpdateDto,
-  EmployeesUpdateManagerDto,
+  EmployeesUpdateReqDto,
+  EmployeesUpdateManagerReqDto,
   EmployeesUpdateSalaryByDepartmentId,
-} from '../controller/employees.dto';
+} from '../controller/employees.req.dto';
 
 const MockingEmployeesRepository = {
   findAll: jest.fn(),
@@ -120,7 +120,7 @@ describe('Employees Service test', () => {
 
   describe('특정 사원의 정보 업데이트 기능', () => {
     it('해당 employeeId의 사원이 존재하며 업데이트에 성공한 경우', async () => {
-      const givenUpdateDto: EmployeesUpdateDto = {
+      const givenUpdateDto: EmployeesUpdateReqDto = {
         employeeId: 100,
         firstName: 'test',
         lastName: 'test',
@@ -157,7 +157,7 @@ describe('Employees Service test', () => {
       expect(employeesRepository.update).toHaveBeenCalledWith(givenUpdateDto);
     });
     it('해당 employeeId의 사원이 존재하지 않아 에러가 발생한 경우', async () => {
-      const givenUpdateDto: EmployeesUpdateDto = {
+      const givenUpdateDto: EmployeesUpdateReqDto = {
         employeeId: 100,
         firstName: 'test',
         lastName: 'test',
@@ -174,7 +174,7 @@ describe('Employees Service test', () => {
       }).rejects.toThrowError(new NotFoundException('The data does not exist'));
     });
     it('해당 employeeId의 사원이 존재하며 최저 급여보다 적게 입력한 경우 최저 급여로 적용', async () => {
-      const givenUpdateDto: EmployeesUpdateDto = {
+      const givenUpdateDto: EmployeesUpdateReqDto = {
         employeeId: 100,
         firstName: 'test',
         lastName: 'test',
@@ -214,7 +214,7 @@ describe('Employees Service test', () => {
       });
     });
     it('해당 employeeId의 사원이 존재하며 최대 급여보다 많게 입력한 경우 최대 급여로 적용', async () => {
-      const givenUpdateDto: EmployeesUpdateDto = {
+      const givenUpdateDto: EmployeesUpdateReqDto = {
         employeeId: 100,
         firstName: 'test',
         lastName: 'test',
@@ -257,7 +257,7 @@ describe('Employees Service test', () => {
 
   describe('특정 사원의 정보 매니저 변경 기능', () => {
     it('employeeId와 managerId를 입력받아 매니저 변경에 성공한 경우', async () => {
-      const givenDto: EmployeesUpdateManagerDto = {
+      const givenDto: EmployeesUpdateManagerReqDto = {
         employeeId: 100,
         managerId: 10,
       };
@@ -282,7 +282,7 @@ describe('Employees Service test', () => {
     });
 
     it('employeeId와 managerId를 null 로 변경에 성공한 경우', async () => {
-      const givenDto: EmployeesUpdateManagerDto = {
+      const givenDto: EmployeesUpdateManagerReqDto = {
         employeeId: 100,
       };
 
@@ -292,7 +292,7 @@ describe('Employees Service test', () => {
     });
 
     it('managerId를 통한 manager 정보가 존재하지 않는 경우 에러', async () => {
-      const givenDto: EmployeesUpdateManagerDto = {
+      const givenDto: EmployeesUpdateManagerReqDto = {
         employeeId: 100,
         managerId: 10,
       };
