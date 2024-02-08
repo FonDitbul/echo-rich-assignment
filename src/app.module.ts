@@ -5,6 +5,7 @@ import { JobsModule } from './jobs/jobs.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { BusinessModule } from './business/business.module';
 import { ConfigModule } from '@nestjs/config';
+import { AppController } from './common/app.controller';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { ConfigModule } from '@nestjs/config';
     DepartmentsModule,
     BusinessModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule implements NestModule {
