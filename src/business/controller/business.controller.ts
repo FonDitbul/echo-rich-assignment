@@ -9,12 +9,14 @@ import {
   ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 import {
   BusinessStatusResDto,
   BusinessValidateResDto,
 } from './business.res.dto';
 
+@ApiTags('business')
 @Controller('business')
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
