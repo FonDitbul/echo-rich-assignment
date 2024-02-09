@@ -34,11 +34,11 @@ export class EmployeesController {
 
   @ApiOperation({
     summary: '사원 전체 조회 API',
-    description: '사원 조회',
+    description: '사원 조회 입니다. 이름 혹은 이메일로 조회할 수 있으며 페이징을 지원합니다.',
   })
   @ApiQuery({
     type: Number,
-    name: 'lastDepartmentId',
+    name: 'lastEmployeeId',
     required: false,
     description: '해당 id 이후의 데이터 조회',
   })
